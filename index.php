@@ -3,11 +3,11 @@
  * Press Release Council Dashboard
  * 
  * CONFIGURATION:
- * - Edit config.php to change admin credentials (default: admin / admin123)
- * - Edit api.php to connect to a real database or modify sample data
- * - To use DB: uncomment DB code in config.php and modify api.php queries
+ * - Edit database/config.php to change admin credentials (default: admin / admin123)
+ * - Edit api/api.php to connect to a real database or modify sample data
+ * - To use DB: uncomment DB code in database/config.php and modify api/api.php queries
  */
-include 'config.php'; 
+include 'database/config.php'; 
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,7 +15,7 @@ include 'config.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Press Release Council Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
     <!-- Header / Navbar -->
@@ -27,17 +27,18 @@ include 'config.php';
             </div>
             <nav class="nav-links">
                 <a href="#" onclick="loadTable('Members'); return false;">Members</a>
-                <a href="#" onclick="loadTable('PressReleases'); return false;">Press Releases</a>
+                <a href="#" onclick="loadTable('PressRelease'); return false;">Press Releases</a>
                 <a href="#" onclick="loadTable('MediaOutlets'); return false;">Media</a>
                 <a href="#" onclick="loadTable('DistributionRecords'); return false;">Distribution</a>
                 <a href="#" onclick="loadTable('Events'); return false;">Events</a>
+                <a href="joins.php" target="_blank" style="color: #4CAF50;">🔗 Join Operations</a>
             </nav>
             <form class="nav-search" onsubmit="performSearch(event)">
                 <input type="text" id="searchInput" placeholder="Search…" aria-label="Search" />
                 <select id="searchScope" aria-label="Scope">
                     <option value="all" selected>All</option>
                     <option value="Members">Members</option>
-                    <option value="PressReleases">Press Releases</option>
+                    <option value="PressRelease">Press Releases</option>
                     <option value="MediaOutlets">Media Outlets</option>
                     <option value="DistributionRecords">Distribution</option>
                     <option value="Events">Events</option>
@@ -56,7 +57,7 @@ include 'config.php';
         <h3>Quick Links</h3>
         <ul>
             <li><a href="#" onclick="loadTable('Members'); return false;">👥 Members</a></li>
-            <li><a href="#" onclick="loadTable('PressReleases'); return false;">📄 Press Releases</a></li>
+            <li><a href="#" onclick="loadTable('PressRelease'); return false;">📄 Press Releases</a></li>
             <li><a href="#" onclick="loadTable('MediaOutlets'); return false;">📡 Media Outlets</a></li>
             <li><a href="#" onclick="loadTable('DistributionRecords'); return false;">📊 Distribution</a></li>
             <li><a href="#" onclick="loadTable('Events'); return false;">📅 Events</a></li>
@@ -87,7 +88,7 @@ include 'config.php';
                     <h3>Members</h3>
                     <p>Manage council members</p>
                 </div>
-                <div class="card" onclick="loadTable('PressReleases')">
+                <div class="card" onclick="loadTable('PressRelease')">
                     <div class="card-icon">📄</div>
                     <h3>Press Releases</h3>
                     <p>View and edit releases</p>
@@ -177,7 +178,7 @@ include 'config.php';
         window.addEventListener('DOMContentLoaded', checkAuthStatus);
 
         function checkAuthStatus() {
-            fetch('auth.php')
+            fetch('api/auth.php')
                 .then(r => r.json())
                 .then(data => {
                     isAdmin = data.is_admin || false;
@@ -209,7 +210,7 @@ include 'config.php';
             formData.append('user', user);
             formData.append('pass', pass);
 
-            fetch('auth.php', { method: 'POST', body: formData })
+            fetch('api/auth.php', { method: 'POST', body: formData })
                 .then(r => r.json())
                 .then(data => {
                     if (data.ok) {
@@ -226,7 +227,7 @@ include 'config.php';
         function logout() {
             const formData = new FormData();
             formData.append('action', 'logout');
-            fetch('auth.php', { method: 'POST', body: formData })
+            fetch('api/auth.php', { method: 'POST', body: formData })
                 .then(r => r.json())
                 .then(data => {
                     isAdmin = false;
@@ -241,7 +242,7 @@ include 'config.php';
             document.getElementById('tableSection').style.display = 'block';
             document.getElementById('tableContainer').innerHTML = '<p>Loading...</p>';
 
-            fetch('api.php?table=' + tableName)
+            fetch('api/api.php?table=' + tableName)
                 .then(r => r.json())
                 .then(data => {
                     if (data.error) {
@@ -421,7 +422,7 @@ include 'config.php';
                 return;
             }
 
-            fetch(`api_crud.php?action=delete&table=${currentTable}&id=${recordId}`, {
+            fetch(`api/api_crud.php?action=delete&table=${currentTable}&id=${recordId}`, {
                 method: 'DELETE'
             })
             .then(r => r.json())
@@ -458,8 +459,8 @@ include 'config.php';
             const isUpdate = recordId && recordId !== '';
             const action = isUpdate ? 'update' : 'create';
             const url = isUpdate 
-                ? `api_crud.php?action=update&table=${currentTable}&id=${recordId}`
-                : `api_crud.php?action=create&table=${currentTable}`;
+                ? `api/api_crud.php?action=update&table=${currentTable}&id=${recordId}`
+                : `api/api_crud.php?action=create&table=${currentTable}`;
 
             fetch(url, {
                 method: 'POST',
@@ -511,7 +512,7 @@ include 'config.php';
             resultsContainer.innerHTML = '<p>Searching…</p>';
             summaryEl.textContent = '';
 
-            const url = `api_search.php?q=${encodeURIComponent(q)}&scope=${encodeURIComponent(scope)}&limit=25`;
+            const url = `api/api_search.php?q=${encodeURIComponent(q)}&scope=${encodeURIComponent(scope)}&limit=25`;
             fetch(url)
                 .then(r => r.json())
                 .then(data => {
